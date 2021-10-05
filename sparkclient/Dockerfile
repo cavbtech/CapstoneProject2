@@ -1,10 +1,3 @@
-#FROM bde2020/spark-python-template:2.4.0-hadoop2.7
-#MAINTAINER Srinivasa Chittaluru <cavbtech@gmail.com>
-#
-##ENV SPARK_MASTER_NAME
-##ENV SPARK_MASTER_PORT
-#ENV SPARK_APPLICATION_PYTHON_LOCATION /app/SimplePySpark.py
-##ENV SPARK_APPLICATION_ARGS "foo bar baz"
 FROM openjdk:8-jre-alpine
 
 RUN apk add --update \
@@ -20,16 +13,8 @@ RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
 RUN pip3 install --no-cache --upgrade pip setuptools
 
-#ENV JAVA_HOME /usr/bin
-#
-#ENV PATH $PATH:$JAVA_HOME/bin
-# RUN curl -s --insecure \
-#  --header "Cookie: oraclelicense=accept-securebackup-cookie;" ${JAVA_ARCHIVE} \
-#  | tar -xz -C /usr/local/ && ln -s $JAVA_HOME /usr/local/java
-
-# SPARK
-ARG SPARK_ARCHIVE=https://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
-ENV SPARK_HOME /usr/local/spark-2.4.0-bin-hadoop2.7
+ARG SPARK_ARCHIVE=https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop3.2.tgz
+ENV SPARK_HOME /usr/local/spark-3.1.2-bin-hadoop3.2
 
 ENV PATH $PATH:${SPARK_HOME}/bin
 RUN curl -s ${SPARK_ARCHIVE} | tar -xz -C /usr/local/

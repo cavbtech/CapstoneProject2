@@ -1,38 +1,38 @@
 version: '3' 
 services:
 
-  namenode:
-    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
-    container_name: namenode
-    volumes:
-      - /tmp/hdfs/namenode:/hadoop/dfs/name
-    environment:
-      - CLUSTER_NAME=test
-    env_file:
-      - ./hadoop-hive.env
-    ports:
-      - "50070:50070"
-    networks:
-      net_pet:
-        ipv4_address: 172.27.1.5
-
-  datanode:
-    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
-    container_name: datanode
-    volumes:
-      - /tmp/hdfs/datanode:/hadoop/dfs/data
-      - ./bank:/bank
-    env_file:
-      - ./hadoop-hive.env
-    environment:
-      SERVICE_PRECONDITION: "namenode:50070"
-    depends_on:
-      - namenode
-    ports:
-      - "50075:50075"
-    networks:
-      net_pet:
-        ipv4_address: 172.27.1.6
+#  namenode:
+#    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
+#    container_name: namenode
+#    volumes:
+#      - /tmp/hdfs/namenode:/hadoop/dfs/name
+#    environment:
+#      - CLUSTER_NAME=test
+#    env_file:
+#      - ./hadoop-hive.env
+#    ports:
+#      - "50070:50070"
+#    networks:
+#      net_pet:
+#        ipv4_address: 172.27.1.5
+#
+#  datanode:
+#    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
+#    container_name: datanode
+#    volumes:
+#      - /tmp/hdfs/datanode:/hadoop/dfs/data
+#      - ./bank:/bank
+#    env_file:
+#      - ./hadoop-hive.env
+#    environment:
+#      SERVICE_PRECONDITION: "namenode:50070"
+#    depends_on:
+#      - namenode
+#    ports:
+#      - "50075:50075"
+#    networks:
+#      net_pet:
+#        ipv4_address: 172.27.1.6
   
 #  hive-server:
 #    image: bde2020/hive:2.3.2-postgresql-metastore
@@ -76,21 +76,23 @@ services:
 #        ipv4_address: 172.27.1.9
     
   spark-master:
-    image: bde2020/spark-master:2.4.0-hadoop2.7
+    ##image: bde2020/spark-master:2.4.0-hadoop2.7
+    image: bde2020/spark-master:3.1.1-hadoop3.2
     container_name: spark-master
     ports:
       - 8080:8080
       - 7077:7077
     environment:
-      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
-    env_file:
-      - ./hadoop-hive.env
+      - INIT_DAEMON_STEP=setup_spark
+#      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+#    env_file:
+#      - ./hadoop-hive.env
     networks:
       net_pet:
         ipv4_address: 172.27.1.10
      
   spark-worker:
-    image: bde2020/spark-worker:2.4.0-hadoop2.7
+    image: bde2020/spark-worker:3.1.1-hadoop3.2
     container_name: spark-worker
     depends_on:
       - spark-master
@@ -100,8 +102,8 @@ services:
 #      - HIVE_CORE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://hive-metastore/metastore
     ports:
       - 8081:8081
-    env_file:
-      - ./hadoop-hive.env
+#    env_file:
+#      - ./hadoop-hive.env
     networks:
       net_pet:
         ipv4_address: 172.27.1.11
