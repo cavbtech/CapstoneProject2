@@ -24,18 +24,26 @@ df = ss.readStream\
 
 df.printSchema()
 
-schema = StructType().add("b", StringType())
+
+schema = StructType()\
+            .add("title", StringType())\
+            .add("published_time", StringType())\
+            .add("summary",StringType())\
+            .add("source",StringType())\
+            .add("category",StringType())
 # df.select( \
 #   col("key").cast("string"),
 #   from_json(col("value").cast("string"), schema))
-#datadf = df.select(from_json(col("value").cast("string"), schema))
-datadf = df.select(col("value").cast("string"))
+datadf = df.select(from_json(col("value").cast("string"), schema).alias("data")).select("data.*")
+
+##datadf = df.select(col("value").cast("string"))
 
 query = datadf\
     .writeStream\
     .outputMode("append")\
     .trigger(processingTime="10 seconds")\
     .format("csv")\
+    .option("header",True)\
     .option("checkpointLocation", "file:///devjars/checkpoint/")\
     .option("path", "file:///devjars/newfeeds/")\
     .start().awaitTermination()

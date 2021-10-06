@@ -41,18 +41,17 @@ def produceRssFeeds():
 
     while True:
         print(f"producer started after {getCurrentTime()}")
-        rssentries = []
         messageCount = 1
         ## get the URLs to pull the data
-        for rss_feed_url in rss_feed_uls_list:
-            rssentries = readRSSFeedURL(rss_feed_url)
+        for category,rss_feed_url in rss_feed_uls_list.items():
+            rssentries = readRSSFeedURL(category,rss_feed_url)
 
         ## get the entry from rss feeds
             for rssentry in rssentries:
                 print(f"message sent count {messageCount}")
-                bjsonData = json.dumps(rssentry, default=json_util.default).encode('utf-8')
+                bjsonData = json.dumps(rssentry.__dict__, default=json_util.default).encode('utf-8')
                 print(f"bjsonData={bjsonData}")
-                kafkaProducer.send(TOPIC, bjsonData.encode('utf-8'))
+                kafkaProducer.send(TOPIC, bjsonData)
                 messageCount = messageCount + 1
         ## sleep for at least 4 hours
         sleep(sleep_time)
