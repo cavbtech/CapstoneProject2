@@ -147,24 +147,24 @@ services:
   #       net_pet:
   #         ipv4_address: 172.27.1.13
   
-  database:
-      image: mysql:5.7
-      container_name: database
-      ports:
-          - "33061:3306"
-      command: --init-file /data/application/init.sql
-      volumes:
-          - /tmp/mysql/data:/var/lib/mysql
-          - ./init.sql:/data/application/init.sql
-      environment:
-          MYSQL_ROOT_USER: root
-          MYSQL_ROOT_PASSWORD: secret
-          MYSQL_DATABASE: hue
-          MYSQL_USER: root
-          MYSQL_PASSWORD: secret
-      networks:
-        net_pet:
-          ipv4_address: 172.27.1.14
+#  database:
+#      image: mysql:5.7
+#      container_name: database
+#      ports:
+#          - "33061:3306"
+#      command: --init-file /data/application/init.sql
+#      volumes:
+#          - /tmp/mysql/data:/var/lib/mysql
+#          - ./init.sql:/data/application/init.sql
+#      environment:
+#          MYSQL_ROOT_USER: root
+#          MYSQL_ROOT_PASSWORD: secret
+#          MYSQL_DATABASE: hue
+#          MYSQL_USER: root
+#          MYSQL_PASSWORD: secret
+#      networks:
+#        net_pet:
+#          ipv4_address: 172.27.1.14
 
   zookeeper:
     image: wurstmeister/zookeeper:3.4.6

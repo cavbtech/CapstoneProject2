@@ -1,14 +1,21 @@
-
+import hashlib
 import feedparser
 from dateutil import parser
 
 class RssFeedFields:
     def __init__(self, title, published_time, summary,source,category):
+        self.id    = hashlib.sha1(title+str(published_time)+summary+source+category).digest()
         self.title = title
         self.published_time = published_time
         self.summary = summary
         self.source=source
         self.category=category
+
+    def __str__(self) -> str:
+        return f" self.title={self.title} self.published_time={self.published_time}" \
+               f" self.summary={self.summary} self.source={self.source} " \
+               f" self.category={self.category}"
+
 
 ## method to get the date in expected format
 def timeToYYYYMMDDHHmmss(publisedTimeObj):
@@ -42,5 +49,8 @@ def readRSSFeedURL(category,urlEntry):
         summary =  entry['summary']
         sourcelink = entry['title_detail']['base']
         rssdataObj = RssFeedFields(title,publishedTimeParsed,summary,sourcelink,category)
+        # print(f"rssdataObj={rssdataObj}")
         rssfeedDataEntries.append(rssdataObj)
     return rssfeedDataEntries
+
+# readRSSFeedURL("world","http://rss.cnn.com/rss/edition_world.rss")

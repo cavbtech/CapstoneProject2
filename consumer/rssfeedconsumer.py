@@ -26,6 +26,7 @@ df.printSchema()
 
 
 schema = StructType()\
+            .add("id",StringType())\
             .add("title", StringType())\
             .add("published_time", StringType())\
             .add("summary",StringType())\
@@ -44,8 +45,8 @@ query = datadf\
     .trigger(processingTime="10 seconds")\
     .format("csv")\
     .option("header",True)\
-    .option("checkpointLocation", "file:///devjars/checkpoint/")\
-    .option("path", "file:///devjars/newfeeds/")\
+    .option("checkpointLocation", "file:///datavol/checkpoint/")\
+    .option("path", "file:///datavol/newfeeds/")\
     .start().awaitTermination()
 
 # csvDF = spark \

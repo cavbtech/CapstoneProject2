@@ -15,16 +15,6 @@ sleep_time = 3600*4
 BROKER = 'kafka:9092'
 TOPIC = 'newsfeeds'
 
-## read rss feed url file and generates the url list
-# def collectRSSFeedURLs():
-#     rss_feed_uls_list = []
-#     with open(rss_feed_url_txt_file, "r+") as file1:
-#         # Reading form a file
-#         line = file1.read()
-#         print(f"line={line}")
-#         rss_feed_uls_list.append(line)
-#     return rss_feed_uls_list
-
 ## getKafkaProducer to return the Kakfa producer object
 def getKafkaProducer():
     try:
