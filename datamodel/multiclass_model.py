@@ -28,7 +28,7 @@ def readCSVDirectory(path):
     files = glob.glob(path+"/*.csv")
     df = pd.DataFrame()
     for f in files:
-        csv = pd.read_csv(f)
+        csv = pd.read_csv(f,error_bad_lines=False) ##drop the bad lines may too many columns than expected
         df = df.append(csv)
     return df
 
@@ -36,7 +36,7 @@ def readCSVDirectory(path):
 def black_txt(token):
     return  token not in stop_words_ and token not in list(string.punctuation)  and len(token)>2 and token not in my_sw
 
-## This function cleans the text for incorrect words and data
+## This function cleans the text for incorrect words and datavol
 def cleanText(text):
     clean_text=[]
     clean_text2=[]
@@ -65,13 +65,15 @@ def len_text(text):
 
 
 #Traing the Model
-## This function first cleans the news data and then fits the data for training
+## This function first cleans the news datavol and then fits the datavol for training
 def trainModel(df_news):
-    df_news['text'] = df_news['title'] + " " + df_news['summary']
-    df_news['text'] = df_news['text'].swifter.apply(cleanText)
-    df_news['polarity'] = df_news['text'].swifter.apply(polarity_txt)
-    df_news['subjectivity'] = df_news['text'].swifter.apply(subj_txt)
-    df_news['len'] = df_news['text'].swifter.apply(lambda x: len(x))
+
+    # df_news['text'] = df_news['title'] + " " + df_news['summary']
+    #df_news['text'] = df_news['text'].apply()
+    df_news['text'] = df_news['text'].apply(cleanText)
+    df_news['polarity'] = df_news['text'].apply(polarity_txt)
+    df_news['subjectivity'] = df_news['text'].apply(subj_txt)
+    df_news['len'] = df_news['text'].apply(lambda x: len(x))
 
     X       =   df_news[['text', 'polarity', 'subjectivity','len']]
     y       =   df_news['category']
@@ -93,17 +95,17 @@ def trainModel(df_news):
 
 
 # Saving the Model
-def saveModel(text_clf):
-    with open('model.pkl','wb') as f:
-        pickle.dump(text_clf,f)
+def saveModel(model_output_dir, clfandvector):
+    with open(model_output_dir+'/model.pkl','wb') as f:
+        pickle.dump(clfandvector[0], f)
 
-def saveVectorData(vectorCategory):
-    with open('vectorCategory.json', 'w') as f:
-        json.dump(vectorCategory, f)
+    with open(model_output_dir+'/vectorCategory.pkl', 'wb') as f:
+        print(f"dictionary={clfandvector[1]}")
+        pickle.dump(clfandvector[1], f)
+
 
 # Main function to start the app when main.py is called
-if __name__ == "__main__":
-    df_news         = readCSVDirectory("/datavol/cleansed/")
+def generateSaveModel(cleansed_output_dir,model_output_dir):
+    df_news         = readCSVDirectory(cleansed_output_dir)
     clfandvector    = trainModel(df_news)
-    saveModel(clfandvector(0))
-    saveVectorData(clfandvector(1))
+    saveModel(model_output_dir,clfandvector)

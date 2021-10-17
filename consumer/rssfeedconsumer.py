@@ -35,7 +35,7 @@ schema = StructType()\
 # df.select( \
 #   col("key").cast("string"),
 #   from_json(col("value").cast("string"), schema))
-datadf = df.select(from_json(col("value").cast("string"), schema).alias("data")).select("data.*")
+datadf = df.select(from_json(col("value").cast("string"), schema).alias("datavol")).select("datavol.*")
 
 ##datadf = df.select(col("value").cast("string"))
 
@@ -45,8 +45,8 @@ query = datadf\
     .trigger(processingTime="10 seconds")\
     .format("csv")\
     .option("header",True)\
-    .option("checkpointLocation", "file:///datavol/checkpoint/")\
-    .option("path", "file:///datavol/newfeeds/")\
+    .option("checkpointLocation", "file:///app/datavol/raw/checkpoint/")\
+    .option("path", "file:///app/datavol/raw/newfeeds/")\
     .start().awaitTermination()
 
 # csvDF = spark \

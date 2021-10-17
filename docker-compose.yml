@@ -1,80 +1,6 @@
 version: '3' 
 services:
 
-#  namenode:
-#    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
-#    container_name: namenode
-#    volumes:
-#      - /tmp/hdfs/namenode:/hadoop/dfs/name
-#    environment:
-#      - CLUSTER_NAME=test
-#    env_file:
-#      - ./hadoop-hive.env
-#    ports:
-#      - "50070:50070"
-#    networks:
-#      net_pet:
-#        ipv4_address: 172.27.1.5
-#
-#  datanode:
-#    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
-#    container_name: datanode
-#    volumes:
-#      - /tmp/hdfs/datanode:/hadoop/dfs/data
-#      - ./bank:/bank
-#    env_file:
-#      - ./hadoop-hive.env
-#    environment:
-#      SERVICE_PRECONDITION: "namenode:50070"
-#    depends_on:
-#      - namenode
-#    ports:
-#      - "50075:50075"
-#    networks:
-#      net_pet:
-#        ipv4_address: 172.27.1.6
-  
-#  hive-server:
-#    image: bde2020/hive:2.3.2-postgresql-metastore
-#    container_name: hive-server
-#    env_file:
-#      - ./hadoop-hive.env
-#    environment:
-#      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore/metastore"
-#      SERVICE_PRECONDITION: "hive-metastore:9083"
-#    ports:
-#      - "10000:10000"
-#    depends_on:
-#      - hive-metastore
-#    networks:
-#      net_pet:
-#        ipv4_address: 172.27.1.7
-#
-#  hive-metastore:
-#    image: bde2020/hive:2.3.2-postgresql-metastore
-#    container_name: hive-metastore
-#    env_file:
-#      - ./hadoop-hive.env
-#    command: /opt/hive/bin/hive --service metastore
-#    environment:
-#      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 hive-metastore-postgresql:5432"
-#    ports:
-#      - "9083:9083"
-#    depends_on:
-#      - hive-metastore-postgresql
-#    networks:
-#      net_pet:
-#        ipv4_address: 172.27.1.8
-#
-#  hive-metastore-postgresql:
-#    image: bde2020/hive-metastore-postgresql:2.3.0
-#    container_name: hive-metastore-postgresql
-#    depends_on:
-#      - datanode
-#    networks:
-#      net_pet:
-#        ipv4_address: 172.27.1.9
-    
   spark-master:
     ##image: bde2020/spark-master:2.4.0-hadoop2.7
     image: bde2020/spark-master:3.1.1-hadoop3.2
@@ -108,66 +34,9 @@ services:
       net_pet:
         ipv4_address: 172.27.1.11
 
-  # zeppelin:
-  #   image: openkbs/docker-spark-bde2020-zeppelin
-  #   container_name: zeppelin
-  #   environment:
-  #     CORE_CONF_fs_defaultFS: "hdfs://namenode:8020"
-  #     SPARK_MASTER: "spark://spark-master:7077"
-  #     MASTER: "spark://spark-master:7077"
-  #     SPARK_MASTER_URL: spark://spark-master:7077
-  #     ZEPPELIN_PORT: 8080
-  #     ZEPPELIN_JAVA_OPTS:
-  #       -Dspark.driver.memory=1g
-  #       -Dspark.executor.memory=2g
-  #   ports:
-  #     - 19090:8080
-  #   env_file:
-  #     - ./hadoop-hive.env
-  #   volumes:
-  #     - /tmp/simple-demo/zeppelin/data:/usr/lib/zeppelin/data:rw
-  #     - /tmp/simple-demo/zeppelin/notebook:/usr/lib/zeppelin/notebook:rw
-  #   command: /usr/lib/zeppelin/bin/zeppelin.sh
-  #   networks:
-  #     net_pet:
-  #       ipv4_address: 172.27.1.12
-
-  # hue:
-  #     image: gethue/hue:20191107-135001
-  #     hostname: hue
-  #     container_name: hue
-  #     dns: 8.8.8.8
-  #     ports:
-  #     - "8888:8888"
-  #     volumes:
-  #       - ./hue-overrides.ini:/usr/share/hue/desktop/conf/z-hue.ini
-  #     depends_on:
-  #     - "database"
-  #     networks:
-  #       net_pet:
-  #         ipv4_address: 172.27.1.13
-  
-#  database:
-#      image: mysql:5.7
-#      container_name: database
-#      ports:
-#          - "33061:3306"
-#      command: --init-file /data/application/init.sql
-#      volumes:
-#          - /tmp/mysql/data:/var/lib/mysql
-#          - ./init.sql:/data/application/init.sql
-#      environment:
-#          MYSQL_ROOT_USER: root
-#          MYSQL_ROOT_PASSWORD: secret
-#          MYSQL_DATABASE: hue
-#          MYSQL_USER: root
-#          MYSQL_PASSWORD: secret
-#      networks:
-#        net_pet:
-#          ipv4_address: 172.27.1.14
-
   zookeeper:
     image: wurstmeister/zookeeper:3.4.6
+    container_name: zookeeper
     ports:
       - "2181:2181"
     networks:
@@ -176,6 +45,7 @@ services:
 
   kafka:
     image: wurstmeister/kafka:2.12-2.3.0
+    container_name: kafka
     ports:
       - "9092:9092"
     environment:
@@ -184,15 +54,35 @@ services:
     networks:
       net_pet:
         ipv4_address: 172.27.1.16  
-
-  # streamsets:
-  #   image: streamsets/datacollector:3.13.0-latest
-  #   ports:
-  #     - "18630:18630"
-  #   networks:
-  #     net_pet:
-  #       ipv4_address: 172.27.1.17  
-
+#
+#  producer:
+#    deploy:
+#      replicas: 1
+#    build: producer
+#    container_name: producer_container
+#    depends_on:
+#      - kafka
+#    volumes:
+#      - ./datavol:/app/datavol
+#    ports:
+#      - "50030:50030"
+#    networks:
+#      net_pet:
+#        ipv4_address: 172.27.1.17
+#  consumer:
+#    deploy:
+#      replicas: 1
+#    build: consumer
+#    container_name: consumer_container
+#    depends_on:
+#      - kafka
+#    volumes:
+#      - ./datavol:/app/datavol
+#    ports:
+#      - "50031:50031"
+#    networks:
+#      net_pet:
+#        ipv4_address: 172.27.1.18
 networks:
   net_pet:
     ipam:

@@ -4,7 +4,9 @@ from dateutil import parser
 
 class RssFeedFields:
     def __init__(self, title, published_time, summary,source,category):
-        self.id    = hashlib.sha1(title+str(published_time)+summary+source+category).digest()
+        self.id    = hashlib.sha1((title+str(published_time)+summary+source+category)
+                                  .encode('utf-8'))\
+                                  .hexdigest()
         self.title = title
         self.published_time = published_time
         self.summary = summary

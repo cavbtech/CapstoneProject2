@@ -1,36 +1,49 @@
-## This program is to read the data and clense the date
+## This program is to read the datavol and clense the date
 from pyspark.sql import SparkSession
 from pyspark.sql import Window
-from pyspark.sql.functions import  col, row_number,regexp_replace,substring,locate
+from pyspark.sql.functions import  col, row_number,regexp_replace,desc,split,coalesce,lit,concat_ws,trim
 
-quotes_match_expression = """/["'][\w\s]+["']|\w+["']\w+/"""
-image_tag_starting      ="<img"
+quotes_match_expression = """\'|\"|,"""
 
-spark           = SparkSession.builder().master("local[1]")\
-                                .appName("SparkByExamples.com")\
-                                .getOrCreate()
-## This would have the fields {id, title,published_time,summary,source,category}
-df              = spark.read.csv("/datavol/raw/newsfeeds/*.csv",header=True)
+def cleanseData(kaggle_data_set,input_data_set,cleansed_output_dir):
+    spark           = SparkSession.builder.master("local[1]")\
+                                    .appName("SparkByExamples.com")\
+                                    .getOrCreate()
 
-firstRowWindow  = Window.partitionBy(col("id")).orderBy(col("published_time").desc)
-deduped_df      = df.withColumn("rn", row_number.over(firstRowWindow))\
-                    .where(col("rn") == 1).drop(col("rn"))
-## Clean the data
-refined_df      = deduped_df.withColumn("title1",regexp_replace(col("title",quotes_match_expression,"")))\
-                            .withColumn("summary1",regexp_replace(col("summary",quotes_match_expression,"")))\
-                            .withColumn("bare_summary",substring("summary1",1,locate("summary1",image_tag_starting)))\
-                            .drop(col("title"),col("summary"),col("summary1"))\
-                            .select(col("id"),
-                                    col("published_time"),
-                                    col("title1").alias("title"),
-                                    col("bare_summary").alias("summary"),
-                                    col("source"),
-                                    col("category"))
+    ## This would have the fields {id, title,published_time,summary,source,category}
+    kaggledf        = spark.read.csv(kaggle_data_set, quote="\"",header=True)
+    rssfeed         = spark.read.csv(input_data_set, quote="\"",header=True)
+    df              = kaggledf.unionAll(rssfeed)
+    df.printSchema()
+    firstRowWindow  = Window.partitionBy("id").orderBy(desc("published_time"))
+    deduped_df      = df.withColumn("rn", row_number().over(firstRowWindow))\
+                        .where(col("rn") == 1).drop(col("rn"))
+    ## Clean the datavol
+    ##.withColumn("bare_summary", substring(col("summary1"), 1, locate(col("summary1"), image_tag_starting))) \
+        # .drop(col("title"),col("summary"),col("summary1"))\
 
-deduped_df.write
-##So just a single part- file will be created
-deduped_df.coalesce(1) \
-.write.mode("overwrite") \
-.option("mapreduce.fileoutputcommitter.marksuccessfuljobs","false") \
-.option("header","true") \
-.csv("file:///datavol/cleansed/")
+
+    refined_df      = deduped_df.filter(col("published_time").isNotNull()) \
+                        .withColumn("title1", regexp_replace(col("title"), quotes_match_expression, "")) \
+                        .withColumn("summary1", regexp_replace(col("summary"), quotes_match_expression, "")) \
+                        .withColumn("bare_summary", split("summary1", "<img")[0])\
+                        .select(col("id"),
+                                col("published_time"),
+                                coalesce(col("title1"),lit("-")).alias("title"),
+                                coalesce(col("bare_summary"),lit("-")).alias("summary"),
+                                col("source"),
+                                coalesce(col("category"),lit("others")).alias("category"))\
+                        .withColumn("text",trim(concat_ws(" ", trim(col("title")), trim(col("summary")))))\
+                        .filter(col("text")!="--")\
+                        .filter(col("category").isNotNull())
+    refined_df.show()
+
+    categoryCountDF = refined_df.groupby(col("category")).count()
+    categoryCountDF.show()
+
+    ##So just a single part- file will be created
+    refined_df.coalesce(1) \
+    .write.mode("overwrite") \
+    .option("mapreduce.fileoutputcommitter.marksuccessfuljobs","false") \
+    .option("header","true") \
+    .csv(cleansed_output_dir)

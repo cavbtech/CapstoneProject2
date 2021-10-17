@@ -32,7 +32,7 @@ def produceRssFeeds():
     while True:
         print(f"producer started after {getCurrentTime()}")
         messageCount = 1
-        ## get the URLs to pull the data
+        ## get the URLs to pull the datavol
         for category,rss_feed_url in rss_feed_uls_list.items():
             rssentries = readRSSFeedURL(category,rss_feed_url)
 
