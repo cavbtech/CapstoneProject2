@@ -1,9 +1,9 @@
 # Implement the following two in another class
 import pickle
-with open('../datavol/trained/model.pkl', 'rb') as f:
+with open('../datavol/trained/active/model.pkl', 'rb') as f:
     clf2 = pickle.load(f)
 
-with open("../datavol/trained/vectorCategory.pkl", 'rb') as infile:
+with open("../datavol/trained/active/vectorCategory.pkl", 'rb') as infile:
     data = pickle.load(infile)
 
 
