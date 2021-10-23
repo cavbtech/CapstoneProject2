@@ -84,7 +84,7 @@ services:
 #      net_pet:
 #        ipv4_address: 172.27.1.18
 
-  consumer:
+  webapp:
     deploy:
       replicas: 1
     build: webapp
