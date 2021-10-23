@@ -1,3 +1,4 @@
+## The webapp application is deployed as microservice
 from datetime import datetime
 
 import uvicorn
@@ -48,4 +49,4 @@ async def landing():
     return FileResponse("static/news_categorization_app.html")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host='0.0.0.0', port=8088, reload=True)
+    uvicorn.run("main:app", host='0.0.0.0', port=11030, reload=True)

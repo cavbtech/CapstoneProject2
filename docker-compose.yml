@@ -1,4 +1,5 @@
-version: '3' 
+#before running the docker-compose up use docker-compose rm -svf
+version: '3'
 services:
 
   spark-master:
@@ -46,6 +47,8 @@ services:
   kafka:
     image: wurstmeister/kafka:2.12-2.3.0
     container_name: kafka
+    depends_on:
+      - zookeeper
     ports:
       - "9092:9092"
     environment:
@@ -55,34 +58,45 @@ services:
       net_pet:
         ipv4_address: 172.27.1.16  
 #
-#  producer:
-#    deploy:
-#      replicas: 1
-#    build: producer
-#    container_name: producer_container
-#    depends_on:
-#      - kafka
-#    volumes:
-#      - ./datavol:/app/datavol
-#    ports:
-#      - "50030:50030"
-#    networks:
-#      net_pet:
-#        ipv4_address: 172.27.1.17
-#  consumer:
-#    deploy:
-#      replicas: 1
-#    build: consumer
-#    container_name: consumer_container
-#    depends_on:
-#      - kafka
-#    volumes:
-#      - ./datavol:/app/datavol
-#    ports:
-#      - "50031:50031"
-#    networks:
-#      net_pet:
-#        ipv4_address: 172.27.1.18
+  producer:
+    deploy:
+      replicas: 1
+    build: producer
+    container_name: producer_container
+    depends_on:
+      - zookeeper
+      - kafka
+    volumes:
+      - ./datavol:/app/datavol
+    ports:
+      - "50030:50030"
+    environment:
+      KAFKA_BROKER: kafka:9092
+      TOPIC: newsfeeds
+    networks:
+      net_pet:
+        ipv4_address: 172.27.1.17
+  consumer:
+    deploy:
+      replicas: 1
+    build: consumer
+    container_name: consumer_container
+    hostname: driver
+    depends_on:
+      - zookeeper
+      - kafka
+    volumes:
+      - ./datavol:/app/datavol
+    ports:
+      - "8088:8088"
+      - "8042:8042"
+      - "4041:4041"
+    environment:
+      KAFKA_BROKER: kafka:9092
+      TOPIC: newsfeeds
+    networks:
+      net_pet:
+        ipv4_address: 172.27.1.18
 
   webapp:
     deploy:
@@ -92,7 +106,7 @@ services:
     volumes:
       - ./datavol:/app/datavol
     ports:
-      - "11050:8088"
+      - "11030:11030"
     networks:
       net_pet:
         ipv4_address: 172.27.1.19

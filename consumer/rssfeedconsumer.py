@@ -4,9 +4,14 @@ from pyspark.streaming import StreamingContext
 from pyspark.sql.types import StructType
 from pyspark.sql.types import StringType
 from pyspark.sql.functions import col,from_json
+import os
 ## install pip3 install pyspark-stubs==2.3.0
 # from pyspark.streaming.kafka import KafkaUtils
 
+BROKER = os.getenv("KAFKA_BROKER")
+BROKER = BROKER if BROKER !=None else 'kafka:9092'
+TOPIC = os.getenv("TOPIC")
+TOPIC = TOPIC if TOPIC !=None else 'newsfeeds'
 
 sc = SparkContext(appName="RssConsumer")
 ssc = StreamingContext(sc, 5)
@@ -18,8 +23,8 @@ ss.sparkContext.setLogLevel('WARN')
 
 df = ss.readStream\
     .format("kafka")\
-    .option("kafka.bootstrap.servers", "kafka:9092")\
-    .option("subscribe", "newsfeeds")\
+    .option("kafka.bootstrap.servers", BROKER)\
+    .option("subscribe", TOPIC)\
     .option("startingOffsets", "earliest").load()
 
 df.printSchema()

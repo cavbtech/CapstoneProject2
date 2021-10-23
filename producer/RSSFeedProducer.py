@@ -2,6 +2,7 @@ import json
 import sys
 from rssfeedurls import rss_feed_urls
 from time import sleep
+import os
 
 ## install pymongo for this .  Do not install bson directly
 from bson import json_util
@@ -12,17 +13,26 @@ from CommonUtils import getCurrentTime
 
 rss_feed_url_txt_file = "rssfeedurls.py"
 sleep_time = 3600*4
-BROKER = 'kafka:9092'
-TOPIC = 'newsfeeds'
+BROKER = os.getenv("KAFKA_BROKER")
+BROKER = BROKER if BROKER !=None else 'kafka:9092'
+TOPIC = os.getenv("TOPIC")
+TOPIC = TOPIC if TOPIC !=None else 'newsfeeds'
 
 ## getKafkaProducer to return the Kakfa producer object
 def getKafkaProducer():
-    try:
-        producer = KafkaProducer(bootstrap_servers=BROKER)
-    except Exception as e:
-        print(f"ERROR --> {e}")
-        sys.exit(1)
-    return producer
+    cnt = 1
+    while (cnt < 4):
+        try:
+
+            print(f'connecting to Kakfa broker={BROKER} number of times tried: {cnt}')
+            producer = KafkaProducer(bootstrap_servers=BROKER)
+            return producer
+
+        except Exception as e:
+            print(f"ERROR --> {e} and broker {BROKER} not found and retrying after 60")
+            sleep(60)
+    print(f"ERROR --> {e} and broker {BROKER} not found. Tried {cnt} times and quitting")
+    sys.exit(1)
 
     ## produce message to kafka for every 4 hours
 def produceRssFeeds():
