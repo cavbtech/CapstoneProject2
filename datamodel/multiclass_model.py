@@ -92,7 +92,11 @@ def trainModel(df_news):
     return (text_clf,v)
 
 
-
+## F1-metrics, ROC and AUC metrics are to used as the data is imbalanaced
+## Can we identify other models?
+## Compare various models and explanation of why MultinomialNB has been used
+## Deep learning also needs to be checked
+## Accuracy to be compared Deep learning vs Machine learn
 
 
 # Saving the Model

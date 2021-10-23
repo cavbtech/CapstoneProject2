@@ -39,7 +39,7 @@ def cleanseData(kaggle_data_set,input_data_set,cleansed_output_dir):
     refined_df.show()
 
     categoryCountDF = refined_df.groupby(col("category")).count()
-    categoryCountDF.show()
+    categoryCountDF.show(False)
 
     ##So just a single part- file will be created
     refined_df.coalesce(1) \

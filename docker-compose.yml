@@ -83,6 +83,19 @@ services:
 #    networks:
 #      net_pet:
 #        ipv4_address: 172.27.1.18
+
+  consumer:
+    deploy:
+      replicas: 1
+    build: webapp
+    container_name: webapp_container
+    volumes:
+      - ./datavol:/app/datavol
+    ports:
+      - "11050:8088"
+    networks:
+      net_pet:
+        ipv4_address: 172.27.1.19
 networks:
   net_pet:
     ipam:
