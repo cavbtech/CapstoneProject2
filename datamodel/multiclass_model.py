@@ -22,6 +22,7 @@ nltk.download('wordnet')
 stop_words_  = set(stopwords.words('english'))
 wn           = WordNetLemmatizer()
 my_sw        = ['make', 'amp',  'news','new' ,'time', 'u','s', 'photos',  'get', 'say']
+csv_dtype_dict={"id": "string", "published_time": "string","title":"string","summary":"string","source":"string","category":"string","text":"string"}
 
 
 # Read Json file
@@ -29,7 +30,7 @@ def readCSVDirectory(path):
     files = glob.glob(path+"/*.csv")
     df = pd.DataFrame()
     for f in files:
-        csv = pd.read_csv(f,error_bad_lines=False) ##drop the bad lines may too many columns than expected
+        csv = pd.read_csv(f,error_bad_lines=False,dtype=csv_dtype_dict) ##drop the bad lines may too many columns than expected
         df = df.append(csv)
     return df
 

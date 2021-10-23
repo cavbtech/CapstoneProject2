@@ -1,20 +1,37 @@
 ## This program is to read the datavol and clense the date
 from pyspark.sql import SparkSession
 from pyspark.sql import Window
-from pyspark.sql.functions import  col, row_number,regexp_replace,desc,split,coalesce,lit,concat_ws,trim
-
+from pyspark.sql.functions import  col, row_number,regexp_replace,desc,split,coalesce,lit,concat_ws,trim,upper
+from category_cleanup import category_mapping
+from pyspark.sql.functions import udf
+from pyspark.sql.types import *
 quotes_match_expression = """\'|\"|,"""
 
+def refine_category(x):
+    try:
+        category       = category_mapping[x]
+    except:
+        category = x
+    return category
+
+refine_category_udf = udf(refine_category, StringType())
+
 def cleanseData(kaggle_data_set,input_data_set,cleansed_output_dir):
-    spark           = SparkSession.builder.master("local[1]")\
+    spark           = SparkSession.builder.master("local[2]")\
                                     .appName("SparkByExamples.com")\
                                     .getOrCreate()
 
     ## This would have the fields {id, title,published_time,summary,source,category}
     kaggledf        = spark.read.csv(kaggle_data_set, quote="\"",header=True)
     rssfeed         = spark.read.csv(input_data_set, quote="\"",header=True)
-    df              = kaggledf.unionAll(rssfeed)
-    df.printSchema()
+
+
+    df              = kaggledf.unionAll(rssfeed)\
+                              .withColumn("categoryU",refine_category_udf(upper(trim(col("category")))))\
+                              .drop(col("category"))\
+                              .withColumnRenamed("categoryU","category")
+
+
     firstRowWindow  = Window.partitionBy("id").orderBy(desc("published_time"))
     deduped_df      = df.withColumn("rn", row_number().over(firstRowWindow))\
                         .where(col("rn") == 1).drop(col("rn"))
@@ -39,7 +56,7 @@ def cleanseData(kaggle_data_set,input_data_set,cleansed_output_dir):
     refined_df.show()
 
     categoryCountDF = refined_df.groupby(col("category")).count()
-    categoryCountDF.show(False)
+    categoryCountDF.show(100)
 
     ##So just a single part- file will be created
     refined_df.coalesce(1) \
